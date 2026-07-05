@@ -84,14 +84,6 @@ jobs:
           export ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION
           ./buildsystem/compile.sh -a arm64
 
-      - name: DEBUG: verify inner patch was created correctly
-        if: always()
-        run: |
-          echo "=== Checking outer patch was applied to VLC ==="
-          ls -la libvlcjni/vlc/contrib/src/nfs/0009-tls-allow-on-android.patch 2>&1 || echo "NOT FOUND"
-          echo "=== Inner patch content ==="
-          cat libvlcjni/vlc/contrib/src/nfs/0009-tls-allow-on-android.patch 2>&1 || echo "MISSING"
-
       - name: DEBUG: verify inner patch and gnutls headers
         if: always()
         run: |
