@@ -63,6 +63,11 @@ jobs:
             python3-pip \
             meson
 
+      - name: Configure git identity (required by VLC patch system)
+        run: |
+          git config --global user.email "ci@github-actions.local"
+          git config --global user.name "GitHub Actions CI"
+
       - name: Verify environment
         run: |
           echo "ANDROID_SDK=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
@@ -119,6 +124,11 @@ jobs:
             autoconf automake libtool m4 pkg-config cmake \
             nasm ragel yasm git make wget curl unzip \
             bison flex gperf gettext python3 python3-pip meson
+
+      - name: Configure git identity (required by VLC patch system)
+        run: |
+          git config --global user.email "ci@github-actions.local"
+          git config --global user.name "GitHub Actions CI"
 
       - name: Build libvlc + app (release, arm64, from source)
         run: |
