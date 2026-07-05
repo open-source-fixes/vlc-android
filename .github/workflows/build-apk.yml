@@ -1,0 +1,135 @@
+name: Build VLC Android with NFS Fix
+
+on:
+  push:
+    branches: [fix-nfs-tls-android]
+  workflow_dispatch:
+
+env:
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+  ANDROID_NDK_VERSION: "28.2.13676358"
+  JAVA_VERSION: "17"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs='-Xmx4g -XX:MaxMetaspaceSize=1g'"
+
+jobs:
+  build-debug:
+    name: Build Debug APK (arm64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout vlc-android
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-36 build-tools;36.0.0 platform-tools cmake;3.22.1"
+
+      - name: Install Android NDK
+        run: |
+          echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install \
+            "ndk;${{ env.ANDROID_NDK_VERSION }}"
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            autoconf \
+            automake \
+            libtool \
+            m4 \
+            pkg-config \
+            cmake \
+            nasm \
+            ragel \
+            yasm \
+            git \
+            make \
+            wget \
+            curl \
+            unzip \
+            bison \
+            flex \
+            gperf \
+            gettext \
+            python3 \
+            python3-pip \
+            meson
+
+      - name: Verify environment
+        run: |
+          echo "ANDROID_SDK=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION" >> $GITHUB_ENV
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          $ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION/ndk-build --version || true
+          cmake --version
+          autoconf --version
+
+      - name: Build libvlc + app (debug, arm64, from source)
+        run: |
+          export ANDROID_SDK=$ANDROID_SDK_ROOT
+          export ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION
+          ./buildsystem/compile.sh -a arm64
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VLC-Android-debug-arm64
+          path: application/app/build/outputs/apk/dev/VLC-Android-*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  build-release:
+    name: Build Release APK (arm64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    needs: build-debug
+
+    steps:
+      - name: Checkout vlc-android
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-36 build-tools;36.0.0 platform-tools cmake;3.22.1"
+
+      - name: Install Android NDK
+        run: |
+          echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install \
+            "ndk;${{ env.ANDROID_NDK_VERSION }}"
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            autoconf automake libtool m4 pkg-config cmake \
+            nasm ragel yasm git make wget curl unzip \
+            bison flex gperf gettext python3 python3-pip meson
+
+      - name: Build libvlc + app (release, arm64, from source)
+        run: |
+          export ANDROID_SDK=$ANDROID_SDK_ROOT
+          export ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION
+          ./buildsystem/compile.sh -a arm64 release
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VLC-Android-release-arm64
+          path: application/app/build/outputs/apk/release/VLC-Android-*.apk
+          if-no-files-found: error
+          retention-days: 14

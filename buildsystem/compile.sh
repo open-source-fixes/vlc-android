@@ -279,14 +279,18 @@ fi
 ####################
 
 
+# Replace with YOUR GitHub username before pushing
+GITHUB_USER="open-source-fixes"
+
 if [ "$FORCE_VLC_4" = 1 ]; then
     LIBVLCJNI_TESTED_HASH=794644aade3b6f2cfb81343d84bfc0a52a2fbc1e
     LIBVLCJNI_BRANCH="master"
+    LIBVLCJNI_REPOSITORY=https://github.com/${GITHUB_USER}/libvlcjni.git
 else
-    LIBVLCJNI_TESTED_HASH=08cbcce16a2f2cf9ca64f253cc8688d8b55a97da
-    LIBVLCJNI_BRANCH="libvlcjni-3.x"
+    LIBVLCJNI_BRANCH="fix-nfs-tls-android"
+    LIBVLCJNI_REPOSITORY=https://github.com/${GITHUB_USER}/libvlcjni.git
+    # No hash pin — use the tip of the fix branch
 fi
-LIBVLCJNI_REPOSITORY=https://code.videolan.org/videolan/libvlcjni.git
 
 : ${VLC_LIBJNI_PATH:="$(pwd -P)/libvlcjni"}
 
@@ -301,7 +305,11 @@ if [ ! -d "$VLC_LIBJNI_PATH" ] || [ ! -d "$VLC_LIBJNI_PATH/.git" ]; then
         git remote add origin "${LIBVLCJNI_REPOSITORY}"
         git pull origin ${LIBVLCJNI_BRANCH}
     fi
-    git reset --hard ${LIBVLCJNI_TESTED_HASH} || fail "libvlcjni sources: LIBVLCJNI_TESTED_HASH ${LIBVLCJNI_TESTED_HASH} not found"
+    if [ -n "${LIBVLCJNI_TESTED_HASH}" ]; then
+        git reset --hard ${LIBVLCJNI_TESTED_HASH} || fail "libvlcjni sources: LIBVLCJNI_TESTED_HASH ${LIBVLCJNI_TESTED_HASH} not found"
+    else
+        git checkout ${LIBVLCJNI_BRANCH} && git pull origin ${LIBVLCJNI_BRANCH}
+    fi
     init_local_props local.properties || { echo "Error initializing local.properties"; exit $?; }
     cd ..
 fi
