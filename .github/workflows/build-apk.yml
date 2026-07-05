@@ -84,19 +84,13 @@ jobs:
           export ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION
           ./buildsystem/compile.sh -a arm64
 
-      - name: DEBUG: verify inner patch and gnutls headers
-        if: always()
+      - name: Debug verify inner patch and gnutls headers
+        if: failure()
         run: |
-          echo "=== Inner patch exists? ==="
-          ls -la libvlcjni/vlc/contrib/src/nfs/0009-tls-allow-on-android.patch 2>&1 || echo "NOT FOUND"
-          echo "=== Inner patch content ==="
-          cat libvlcjni/vlc/contrib/src/nfs/0009-tls-allow-on-android.patch 2>&1 || echo "MISSING"
-          echo "=== GnuTLS include dir ==="
-          find libvlcjni/vlc/contrib -path "*/include/gnutls*" -type d 2>/dev/null || echo "NO GNUTLS DIR"
-          echo "=== GnuTLS header ==="
-          find libvlcjni/vlc/contrib -name "gnutls.h" 2>/dev/null || echo "NO gnutls.h found"
-          echo "=== GnuTLS lib ==="
-          find libvlcjni/vlc/contrib -name "libgnutls*" 2>/dev/null || echo "NO libgnutls found"
+          echo "=== Inner patch exists ===" && ls -la libvlcjni/vlc/contrib/src/nfs/0009-tls-allow-on-android.patch || echo "NOT FOUND"
+          echo "=== Inner patch content ===" && cat libvlcjni/vlc/contrib/src/nfs/0009-tls-allow-on-android.patch || echo "MISSING"
+          echo "=== gnutls.h ===" && find libvlcjni/vlc/contrib -name "gnutls.h" || echo "NO gnutls.h"
+          echo "=== libgnutls ===" && find libvlcjni/vlc/contrib -name "libgnutls*" || echo "NO libgnutls"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
