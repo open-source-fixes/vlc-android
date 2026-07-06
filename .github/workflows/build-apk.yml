@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: VLC-Android-debug-arm64
-          path: application/app/build/outputs/apk/dev/VLC-Android-*-arm64*.apk
+          path: application/app/build/outputs/apk/dev/VLC-Android-*.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -149,6 +149,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: VLC-Android-release-arm64
-          path: application/app/build/outputs/apk/release/VLC-Android-*-arm64*.apk
+          path: application/app/build/outputs/apk/release/VLC-Android-*.apk
           if-no-files-found: error
           retention-days: 14
