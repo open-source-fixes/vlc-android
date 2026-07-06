@@ -143,7 +143,7 @@ jobs:
         run: |
           export ANDROID_SDK=$ANDROID_SDK_ROOT
           export ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION
-          ./buildsystem/compile.sh -a arm64 release
+          ./buildsystem/compile.sh -a arm64
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
